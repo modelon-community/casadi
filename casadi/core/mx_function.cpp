@@ -68,7 +68,7 @@ namespace casadi {
         "Perform common subexpression elimination (complexity is N*log(N) in graph size)"}},
       {"allow_free",
        {OT_BOOL,
-        "Allow construction with free variables (Default: false)"}},
+        "Allow construction with free variables (Default: true)"}},
       {"allow_duplicate_io_names",
        {OT_BOOL,
         "Allow construction with duplicate io names (Default: false)"}}
@@ -116,7 +116,7 @@ namespace casadi {
     live_variables_ = true;
     print_instructions_ = false;
     bool cse_opt = false;
-    bool allow_free = false;
+    bool allow_free = true;
 
     // Read options
     for (auto&& op : opts) {
