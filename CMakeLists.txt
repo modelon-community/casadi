@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.15)
+# Minimum version is 3.15 due to how we are setting CMAKE_MSVC_RUNTIME_LIBRARY below
 project(casadi C CXX)
 
 set(CASADI_MAJOR_VERSION 3)
@@ -24,6 +25,11 @@ set(PACKAGE_URL "http://casadi.org")
 
 set(CASADI_TP_SHARED_PREFIX casadi-tp-)
 
+if(MSVC)
+  # Force linking with MT
+  # force /MT (or /MTd if using the Debug configuration) for all targets defined after this point
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 ############################################################
 ####################### Policies ###########################
@@ -823,7 +829,7 @@ function(libraries2flags libraries out)
   endforeach()
 endfunction()
 
-macro(create_import_library TARGET LIB_NAME) 
+macro(create_import_library TARGET LIB_NAME)
   if(CMAKE_CROSS_COMPILING AND MINGW)
     # Get target in lowercase
     string(TOLOWER ${LIB_NAME} TARGET_LOWER)
@@ -1046,7 +1052,7 @@ if(WITH_LAPACK)
       CMAKE_COMMAND "${EXTERNAL_CMAKE_COMMAND}"
       PATCH_COMMAND ${EXTERNAL_CMAKE_COMMAND} -DCASADI_TP_SHARED_PREFIX=${CASADI_TP_SHARED_PREFIX} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch_openblas.cmake
       CMAKE_ARGS -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_LIBDIR=lib ${OPENBLAS_FLAGS} -DBUILD_SINGLE=ON -DBUILD_DOUBLE=ON -DBUILD_COMPLEX=ON -DBUILD_COMPLEX16=ON -DUSE_OPENMP=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>)
-    set(LAPACK_LIBRARIES "${CMAKE_BINARY_DIR}/external_projects/${SHARED_LIBRARY_RELDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${CASADI_TP_SHARED_PREFIX}openblas${CMAKE_SHARED_LIBRARY_SUFFIX}")    
+    set(LAPACK_LIBRARIES "${CMAKE_BINARY_DIR}/external_projects/${SHARED_LIBRARY_RELDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${CASADI_TP_SHARED_PREFIX}openblas${CMAKE_SHARED_LIBRARY_SUFFIX}")
     set(LAPACK_DEPENDS_TARGET openblas-external)
     set(CMAKE_BLAS_CONFIG -DCMAKE_PREFIX_PATH=${CMAKE_BINARY_DIR}/external_projects; -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH=ON -DBLA_PREFER_PKGCONFIG=ON -DBLA_PKGCONFIG_BLAS=openblas)
 
@@ -1313,7 +1319,7 @@ if(WITH_CLP)
         PREFIX "${CMAKE_BINARY_DIR}/external_projects"
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure ${CROSS_FLAGS_CONFIGURE} --prefix=<INSTALL_DIR> ${CROSS_FLAGS_FORTRAN}
-	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers 
+	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers
 	--enable-pkg-config
     )
     add_library(osi SHARED IMPORTED)
@@ -1334,7 +1340,7 @@ if(WITH_CLP)
         PREFIX "${CMAKE_BINARY_DIR}/external_projects"
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure ${CROSS_FLAGS_CONFIGURE} "--with-lapack-lflags=${LAPACK_LFLAGS}" --prefix=<INSTALL_DIR>  ${CROSS_FLAGS_FORTRAN}
-	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers 
+	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers
 	--enable-pkg-config
 	${APPLE_FLAGS}
 	)
@@ -1370,7 +1376,7 @@ if(WITH_CBC)
         PREFIX "${CMAKE_BINARY_DIR}/external_projects"
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure ${CROSS_FLAGS_CONFIGURE} --prefix=<INSTALL_DIR> ${CROSS_FLAGS_FORTRAN}
-	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers 
+	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers
 	--enable-pkg-config
 	)
 
@@ -1381,7 +1387,7 @@ if(WITH_CBC)
         PREFIX "${CMAKE_BINARY_DIR}/external_projects"
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure ${CROSS_FLAGS_CONFIGURE} --enable-cbc-parallel --prefix=<INSTALL_DIR> "--with-lapack-lflags=${LAPACK_LFLAGS}"  ${CROSS_FLAGS_FORTRAN}
-	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers 
+	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers
 	--enable-pkg-config
 	)
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/external_projects/include/coin")
@@ -1436,7 +1442,7 @@ if(WITH_IPOPT)
         ${SPRAL_FLAGS}
         "--with-lapack-lflags= ${LAPACK_LFLAGS}" ${CROSS_FLAGS_FORTRAN}
 	--disable-java
-	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers 
+	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers
 	--enable-pkg-config
 	--enable-dependency-linking
 	${COIN_FLAGS}
@@ -1464,7 +1470,7 @@ if(WITH_BONMIN)
         PREFIX "${CMAKE_BINARY_DIR}/external_projects"
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND <SOURCE_DIR>/configure ${CROSS_FLAGS_CONFIGURE} --prefix=<INSTALL_DIR>  ${CROSS_FLAGS_FORTRAN}
-	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers 
+	# For unknown reasons, Coin-or/configure disables pkg-config by default for clang compilers
 	--enable-pkg-config
 	# issue #2988
 	--enable-dependency-linking
@@ -1520,7 +1526,7 @@ if(WITH_SLEQP)
         PREFIX "${CMAKE_BINARY_DIR}/external_projects"
         CMAKE_COMMAND ${EXTERNAL_CMAKE_COMMAND} -E env MUMPSDIR=${MUMPS_INTERFACE_INCLUDE_DIRECTORIES} ${EXTERNAL_CMAKE_COMMAND}
         CMAKE_ARGS -DSLEQP_MUMPS_INIT_MPI=OFF ${CMAKE_BLAS_CONFIG} -DCMAKE_INSTALL_RPATH=${CMAKE_INSTALL_RPATH} -DSLEQP_ENABLE_UNIT_TESTS=OFF -DSLEQP_ENABLE_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> ${CROSS_FLAGS_CMAKE})
-        
+
   add_library(sleqp::sleqp SHARED IMPORTED)
   add_dependencies(sleqp::sleqp sleqp-external)
   set(SHARED_LIBRARY64_RELDIR_SLEQP ${SHARED_LIBRARY64_RELDIR})
@@ -1667,7 +1673,7 @@ if(WITH_SUPERSCS)
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/external_projects/include/superscs")
     add_library(superscs STATIC IMPORTED)
     add_library(superscs-linsys STATIC IMPORTED)
-    add_library(superscs-linsys-indirect STATIC IMPORTED)    
+    add_library(superscs-linsys-indirect STATIC IMPORTED)
     add_dependencies(superscs superscs-external superscs-linsys superscs-linsys-indirect casadi)
     target_link_libraries(superscs INTERFACE lapack superscs-linsys superscs-linsys-indirect casadi)
     target_link_libraries(superscs-linsys-indirect INTERFACE superscs)
