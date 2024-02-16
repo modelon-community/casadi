@@ -13,8 +13,10 @@ endif()
 
 casadi_plugin(Nlpsol ipopt ${NLPSOL_IPOPT_SRCS})
 if(MSVC)
-  set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} mkl_intel_lp64 mkl_sequential mkl_core netapi32 comctl32 Ws2_32 Dhcpcsvc Userenv Shlwapi Comdlg32 OleAut32 Ole32 Wbemuuid legacy_stdio_definitions)
+  set(IPOPT_LIBRARIES ipopt ${IPOPT_LIBRARIES} mkl_intel_lp64 mkl_sequential mkl_core netapi32 comctl32 Ws2_32 Dhcpcsvc Userenv Shlwapi Comdlg32 OleAut32 Ole32 Wbemuuid legacy_stdio_definitions)
+else()
+  set(IPOPT_LIBRARIES ipopt)
 endif()
-casadi_plugin_link_libraries(Nlpsol ipopt ${IPOPT_LIBRARIES})
+casadi_plugin_link_libraries(Nlpsol ipopt ipopt ${IPOPT_LIBRARIES})
 
 #set_property(TARGET casadi_nlpsol_ipopt PROPERTY PKG_CONFIG_REQUIRES ipopt)
