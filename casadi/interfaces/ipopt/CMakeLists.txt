@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.10.2)
 
+if(MSVC)
+  # This is added since MSVC has troubles finding coinmumps.lib
+  link_directories(${IPOPT_LIBRARY_DIRS})
+  include_directories(${IPOPT_INCLUDE_DIRS})
+endif()
 set(NLPSOL_IPOPT_SRCS
   ipopt_interface.hpp
   ipopt_interface.cpp
@@ -13,8 +18,6 @@ endif()
 
 casadi_plugin(Nlpsol ipopt ${NLPSOL_IPOPT_SRCS})
 if(MSVC)
-  link_directories(${IPOPT_LIBRARY_DIRS})
-  include_directories(${IPOPT_INCLUDE_DIRS})
   set(IPOPT_LIBRARIES ipopt ${IPOPT_LIBRARIES} mkl_intel_lp64 mkl_sequential mkl_core netapi32 comctl32 Ws2_32 Dhcpcsvc Userenv Shlwapi Comdlg32 OleAut32 Ole32 Wbemuuid legacy_stdio_definitions)
 else()
   set(IPOPT_LIBRARIES ipopt)
