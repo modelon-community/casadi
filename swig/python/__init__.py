@@ -33,7 +33,12 @@ backup_object = object
 
 try:
   if sys.version_info >= (3, 0):
-    from casadi.casadi import *
+    # See https://docs.python.org/3/whatsnew/3.8.html#bpo-36085-whatsnew
+    if os.name == 'nt' and sys.version_info > (3, 7):
+      with os.add_dll_directory(os.environ['CASADI_LIB_HOME']):
+        from casadi.casadi import *
+    else:
+      from casadi.casadi import *
   else:
     from casadi import *
     import casadi
